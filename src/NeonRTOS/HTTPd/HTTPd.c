@@ -213,7 +213,14 @@ static void HTTPd_Connection_Timeout_CB(NeonRTOS_TimerHandle connection_timeout_
         {
               TimerID-=HTTPD_TIMER_ID_OFFSET;
               UART_Printf("HTTPD Client Index %d Connection Timeout\n", TimerID);
-              HTTPd_WebSocketd_Client_List[TimerID]->connection_destruct_flag = true;
+              if(HTTPd_WebSocketd_Client_List[TimerID])
+              {
+                    HTTPd_WebSocketd_Client_List[TimerID]->connection_destruct_flag = true;
+              }
+              else
+              {
+                    NeonRTOS_TimerDelete(&connection_timeout_timer_handle);
+              }
         }
 }
 
@@ -1566,8 +1573,7 @@ void HTTP_Server_Task(void *pvParameters)
         
         if(HTTP_WebSocket_Server_Socket>=0)
         {
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
         
@@ -1575,8 +1581,7 @@ void HTTP_Server_Task(void *pvParameters)
         HTTP_WebSocket_Server_Socket = socket(AF_INET, SOCK_STREAM, 0);
         if (HTTP_WebSocket_Server_Socket < 0)
         {
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
 
@@ -1588,8 +1593,7 @@ void HTTP_Server_Task(void *pvParameters)
         if (ret < 0)
         {
                 close(HTTP_WebSocket_Server_Socket);
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
         
@@ -1598,8 +1602,7 @@ void HTTP_Server_Task(void *pvParameters)
         if (ret < 0)
         {
                 close(HTTP_WebSocket_Server_Socket);
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
         
@@ -1607,8 +1610,7 @@ void HTTP_Server_Task(void *pvParameters)
         if(ret < 0)
         {
                 close(HTTP_WebSocket_Server_Socket);
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
 
@@ -1616,8 +1618,7 @@ void HTTP_Server_Task(void *pvParameters)
         if(ret < 0)
         {
                 close(HTTP_WebSocket_Server_Socket);
-                NeonRTOS_TaskHandle self = NULL;
-                NeonRTOS_TaskDelete(&self);
+                NeonRTOS_TaskDelete(NULL);
                 return;
         }
 
@@ -2100,11 +2101,13 @@ void HTTP_Server_Task(void *pvParameters)
                                 
                                 if(WebSocketServer_ReceiveWsFrame(HTTPd_WebSocketd_Client_List[i], &frame)<0)
                                 {
+                                        NeonRTOS_Sleep(500);
                                         continue;
                                 }
                                 
                                 if (frame.payloadLength == 0)
                                 {
+                                        NeonRTOS_Sleep(500);
                                         continue;
                                 }
                                 
