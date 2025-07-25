@@ -2101,13 +2101,13 @@ void HTTP_Server_Task(void *pvParameters)
                                 
                                 if(WebSocketServer_ReceiveWsFrame(HTTPd_WebSocketd_Client_List[i], &frame)<0)
                                 {
-                                        NeonRTOS_Sleep(500);
+                                        NeonRTOS_Sleep(100);
                                         continue;
                                 }
                                 
                                 if (frame.payloadLength == 0)
                                 {
-                                        NeonRTOS_Sleep(500);
+                                        NeonRTOS_Sleep(100);
                                         continue;
                                 }
                                 
