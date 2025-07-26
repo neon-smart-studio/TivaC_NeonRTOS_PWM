@@ -63,7 +63,6 @@ typedef struct HTTPd_WebSocked_Client_Connection
 #ifdef HTTPD_USE_SSL
 	ssl_context client_ssl_ctx;
 #endif
-        NeonRTOS_TaskHandle clientTaskHandle;
 	struct sockaddr client_socket_addr;
         HTTPd_Connection_Mode connetion_mode;
         uint32_t connection_keep_alive_time;
@@ -1661,8 +1660,6 @@ void HTTP_Server_Task(void *pvParameters)
                         if(GetNumOfHttpdClient()<=HTTPD_MAX_CLIENTS)
                         {
                                 current_http_socketID = ret;
-                                
-                                //clientTaskHandle
                                 
                                 uint8_t j = 0;
                                 UART_Printf("current_http_socketID = %d --> AddHttpClient\n", current_http_socketID);
