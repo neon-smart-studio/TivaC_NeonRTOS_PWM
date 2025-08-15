@@ -1824,6 +1824,7 @@ void HTTP_Server_Task(void *pvParameters)
                                         
                                 if (HTTPd_WebSocketd_Client_List[i]->connection_timeout_timer != NULL)
                                 {
+                                        UART_Printf("[%d] HTTPd_WebSocketd_Client_List[i]->connection_timeout_timer != NULL\n", i);
                                         NeonRTOS_TimerStop(&HTTPd_WebSocketd_Client_List[i]->connection_timeout_timer);
                                         NeonRTOS_TimerDelete(&HTTPd_WebSocketd_Client_List[i]->connection_timeout_timer);
                                         HTTPd_WebSocketd_Client_List[i]->connection_timeout_timer = NULL;
