@@ -22,8 +22,6 @@ extern "C" {
 #define HTTP_PORT                            80
 #endif
 
-#define HTTPD_TIMER_ID_OFFSET                1
-
 #define HTTP_TIMEOUT_STR                     "5"
 #define HTTP_TIMEOUT_S                       5
 #define HTTP_TIMEOUT_TIMER_MS                5000

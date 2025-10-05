@@ -210,7 +210,6 @@ static void HTTPd_Connection_Timeout_CB(NeonRTOS_TimerHandle connection_timeout_
 	NeonRTOS_TimerStop(&connection_timeout_timer_handle);
         if(NeonRTOS_GetTimerID(&connection_timeout_timer_handle, &TimerID)==NeonRTOS_OK)
         {
-              TimerID-=HTTPD_TIMER_ID_OFFSET;
               UART_Printf("HTTPD Client Index %d Connection Timeout\n", TimerID);
               if(HTTPd_WebSocketd_Client_List[TimerID])
               {
@@ -1682,7 +1681,7 @@ void HTTP_Server_Task(void *pvParameters)
                                                                 
                                                                 HTTPd_Restore_Variables(j);
                                                                 
-                                                                if(NeonRTOS_TimerCreate(&HTTPd_WebSocketd_Client_List[j]->connection_timeout_timer, "Connection Timeout", HTTP_TIMEOUT_TIMER_MS, 1, j+HTTPD_TIMER_ID_OFFSET, HTTPd_Connection_Timeout_CB)!=NeonRTOS_OK)
+                                                                if(NeonRTOS_TimerCreate(&HTTPd_WebSocketd_Client_List[j]->connection_timeout_timer, "Connection Timeout", HTTP_TIMEOUT_TIMER_MS, 1, j, HTTPd_Connection_Timeout_CB)!=NeonRTOS_OK)
                                                                 {
                                                                         mem_Free(HTTPd_WebSocketd_Client_List[j]);
                                                                         HTTPd_WebSocketd_Client_List[j] = NULL;
