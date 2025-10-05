@@ -1862,6 +1862,7 @@ void HTTP_Server_Task(void *pvParameters)
                                 uint8_t* data_ptr = NULL;
                                 
                                 bool client_close = false;
+                                bool client_skip = false;
                                 do{
 #ifdef HTTPD_USE_SSL
                                         ret = ssl_read(&ssl, &http_cmd_buf[recv_len], 1);
@@ -1888,16 +1889,16 @@ void HTTP_Server_Task(void *pvParameters)
 
                                                 if(socket_errno == EAGAIN || socket_errno == EWOULDBLOCK)
                                                 {
-                                                        UART_Printf("[%d] socket errno: 0 EAGAIN --> Wait!\n", i);
-                                                        NeonRTOS_Sleep(100);
-                                                        continue;
+                                                        UART_Printf("[%d] socket errno: 0 EAGAIN --> Skip!\n", i);
+                                                        client_skip = true;
+                                                        break;
                                                 }
                                                 
                                                 if(socket_errno==0)
                                                 {
-                                                        UART_Printf("[%d] socket errno: 0 sockfd %d --> Wait!\n", i, current_http_socketID);
-                                                        NeonRTOS_Sleep(100);
-                                                        continue;
+                                                        UART_Printf("[%d] socket errno: 0 sockfd %d --> Skip!\n", i, current_http_socketID);
+                                                        client_skip = true;
+                                                        break;
                                                 }
 
                                                 client_close = true;
@@ -1915,6 +1916,13 @@ void HTTP_Server_Task(void *pvParameters)
                                         recv_len+=ret;
                                 }
                                 while((data_ptr=(uint8_t*)strstr((char*)http_cmd_buf, "\r\n\r\n"))==NULL && recv_len<HTTPD_CMD_BUF_SIZE);
+
+                                if(client_skip)
+                                {
+                                        mem_Free(http_cmd_buf);
+                                        
+                                        continue;
+                                }
 
                                 if(client_close)
                                 {
@@ -1952,6 +1960,7 @@ void HTTP_Server_Task(void *pvParameters)
 
                                                         uint16_t cgi_recv_len = 0;
                                                         bool cgi_client_close = false;
+                                                        bool cgi_client_skip = false;
                                                         do{
 #ifdef HTTPD_USE_SSL
                                                                 ret = ssl_read(&ssl, &HTTPd_WebSocketd_Client_List[i]->data_buff[cgi_recv_len], 1);
@@ -1978,16 +1987,16 @@ void HTTP_Server_Task(void *pvParameters)
 
                                                                         if(socket_errno == EAGAIN || socket_errno == EWOULDBLOCK)
                                                                         {
-                                                                                UART_Printf("[%d] cgi socket errno: 0 EAGAIN --> Wait!\n", i);
-                                                                                NeonRTOS_Sleep(100);
-                                                                                continue;
+                                                                                UART_Printf("[%d] cgi socket errno: 0 EAGAIN --> Skip!\n", i);
+                                                                                cgi_client_skip = true;
+                                                                                break;
                                                                         }
                                                                         
                                                                         if(socket_errno==0)
                                                                         {
-                                                                                UART_Printf("[%d] cgi socket errno: 0 sockfd %d --> Wait!\n", i, current_http_socketID);
-                                                                                NeonRTOS_Sleep(100);
-                                                                                continue;
+                                                                                UART_Printf("[%d] cgi socket errno: 0 sockfd %d --> Skip!\n", i, current_http_socketID);
+                                                                                cgi_client_skip = true;
+                                                                                break;
                                                                         }
 
                                                                         cgi_client_close = true;
@@ -2005,6 +2014,13 @@ void HTTP_Server_Task(void *pvParameters)
                                                                 cgi_recv_len+=ret;
                                                         }
                                                         while(cgi_recv_len<HTTPd_WebSocketd_Client_List[i]->data_len);
+
+                                                        if(cgi_client_skip)
+                                                        {
+                                                                mem_Free(http_cmd_buf);
+                                                                
+                                                                continue;
+                                                        }
 
                                                         if(cgi_client_close)
                                                         {
