@@ -1643,11 +1643,9 @@ void HTTP_Server_Task(void *pvParameters)
                                 {
                                         UART_Printf("[Server] accept socket_errno = %d!\n", socket_errno);
 
-                                        if(socket_errno != EAGAIN && socket_errno != EWOULDBLOCK)
-                                        {
-                                                NeonRTOS_Sleep(500);
-                                                continue;
-                                        }
+                                        NeonRTOS_Sleep(500);
+                                        
+                                        break;
                                 }
                         }
                 }while(ret<0 && socket_errno>=0);
