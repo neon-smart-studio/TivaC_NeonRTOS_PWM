@@ -1641,7 +1641,7 @@ void HTTP_Server_Task(void *pvParameters)
                                 }
                                 if(socket_errno>0)
                                 {
-                                        printf("[Server] accept socket_errno = %d!\n", socket_errno);
+                                        UART_Printf("[Server] accept socket_errno = %d!\n", socket_errno);
 
                                         if(socket_errno != EAGAIN && socket_errno != EWOULDBLOCK)
                                         {
