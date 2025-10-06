@@ -1366,7 +1366,7 @@ int HTTPd_Process_POST_Request(HTTPd_WebSocked_Client_Connection *connData)
                 int recvBlockTime = 0;
                 
                 recvBlockTime = 10000;
-                if(setsockopt(connData->socket_id, SOL_SOCKET, SO_RCVTIMEO, &recvBlockTime, sizeof(recvBlockTime) < 0)) {
+                if(setsockopt(connData->socket_id, SOL_SOCKET, SO_RCVTIMEO, &recvBlockTime, sizeof(recvBlockTime)) < 0) {
                         return HTTPD_CGI_DONE;
                 }
                 
@@ -1376,7 +1376,7 @@ int HTTPd_Process_POST_Request(HTTPd_WebSocked_Client_Connection *connData)
                 connData->cgiArg = NULL;
                 
                 recvBlockTime = 500;
-                if(setsockopt(connData->socket_id, SOL_SOCKET, SO_RCVTIMEO, &recvBlockTime, sizeof(recvBlockTime) < 0)) {
+                if(setsockopt(connData->socket_id, SOL_SOCKET, SO_RCVTIMEO, &recvBlockTime, sizeof(recvBlockTime)) < 0) {
                         return HTTPD_CGI_DONE;
                 }
                 
