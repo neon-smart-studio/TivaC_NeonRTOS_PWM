@@ -562,17 +562,17 @@ int HTTPd_Parse_InMsg_Headers(uint8_t *header, uint16_t header_len, HTTPd_WebSoc
 		return -1;
 	}
         
+        uint8_t *e = (uint8_t *)strchr(request_url, ' ');
+        if (e == NULL) {
+		return -1;
+        }
+        *e = '\0'; // 正確終止 URL
+
         size_t ulen = strlen(request_url);
         char *url_copy = mem_Malloc(ulen + 1);
         if (!url_copy) return -1;
         memcpy(url_copy, request_url, ulen + 1);
         connData->url = url_copy;
-
-        uint8_t *e = (uint8_t *)strchr(connData->url, ' ');
-        if (e == NULL) {
-		return -1;
-        }
-        *e = '\0'; // 正確終止 URL
 
 	connData->getArgs = (char*)strstr(connData->url, "?");
 	if (connData->getArgs != 0) {
@@ -1477,7 +1477,16 @@ int HTTPd_Process_GET_Request(HTTPd_WebSocked_Client_Connection *connData) {
                         r = HTTPD_CGI_DONE;
 			if (strncmp(connData->url, "/", 1) == 0 && strlen(connData->url) == strlen("/"))
 			{
-                                connData->url = "index.html";
+                                mem_Free(connData->url);
+                                const char* pUrl = "index.html";
+                                uint8_t url_len = strlen(pUrl);
+                                connData->url = mem_Malloc(url_len+1);
+                                if(connData->url==NULL)
+                                {
+                                        return HTTPD_CGI_DONE; 
+                                }
+                                memcpy(connData->url, pUrl, url_len);
+                                connData->url[url_len] = '\0';
                                 r = HTTPd_SendWebFile(connData);
 			}
 			else
