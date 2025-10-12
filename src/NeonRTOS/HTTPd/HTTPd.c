@@ -413,7 +413,7 @@ void WebsocketServer_SendBrocastJSONMessage(cJSON* data, bool need_delete_json)
 		cJSON_Delete(data);
 	}
         
-	//HTTPd_WebsocketServer_Send_Brocast_Message((char*)json_str, strlen(json_str), WEBSOCK_FLAG_NONE);
+	HTTPd_WebsocketServer_Send_Brocast_Message((char*)json_str, strlen(json_str), WEBSOCK_FLAG_NONE);
 	mem_Free(json_str);
 }
 
