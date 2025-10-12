@@ -210,8 +210,16 @@ static void HTTPd_Connection_Timeout_CB(NeonRTOS_TimerHandle connection_timeout_
 	NeonRTOS_TimerStop(&connection_timeout_timer_handle);
         if(NeonRTOS_GetTimerID(&connection_timeout_timer_handle, &TimerID)==NeonRTOS_OK)
         {
-              UART_Printf("HTTPD Client Index %d Connection Timeout\n", TimerID);
-              HTTPd_WebSocketd_Client_List[TimerID]->connection_destruct_flag = true;
+                if(TimerID>=HTTPD_MAX_CLIENTS)
+                {
+                        return;
+                }
+                if(HTTPd_WebSocketd_Client_List[TimerID]==NULL)
+                {
+                        return;
+                }
+                UART_Printf("HTTPD Client Index %d Connection Timeout\n", TimerID);
+                HTTPd_WebSocketd_Client_List[TimerID]->connection_destruct_flag = true;
         }
 }
 
@@ -1024,7 +1032,14 @@ int HTTPd_SendWebFile(HTTPd_WebSocked_Client_Connection *connData)
 	const char* web_file_content_type_str = HTTPdGetMimetype(connData->url);
 
 	NeonRtFsFile* send_file = NULL;
-        send_file = NeonRtFsOpen(connData->url);
+        if (strncmp(connData->url, "/", 1) == 0 && strlen(connData->url) == strlen("/"))
+        {
+                send_file = NeonRtFsOpen("index.html");
+        }
+        else
+        {
+                send_file = NeonRtFsOpen(connData->url);
+        }
 	if (send_file == NULL)
 	{
                 return HTTPD_CGI_NOTFOUND;
@@ -1413,18 +1428,12 @@ int HTTPd_Process_POST_Request(HTTPd_WebSocked_Client_Connection *connData)
 int HTTPd_Process_GET_Request(HTTPd_WebSocked_Client_Connection *connData) {
 	if (connData->websocket_client == true)
 	{
-		char* acceptKey = mem_Malloc(101);
+		char* acceptKey = mem_Malloc(100);
 		if (acceptKey == NULL) {
                         return HTTPD_CGI_DONE;
 		}
 
-                int n = WebSocketServer_CreateAcceptKey(connData->client_key, acceptKey, 100);
-                if (n <= 0 || n >= 100)
-                {
-                        mem_Free(acceptKey);
-                        return HTTPD_CGI_DONE;
-                }
-                acceptKey[n] = '\0';
+                WebSocketServer_CreateAcceptKey(connData->client_key, acceptKey, 100);
                 
 		uint8_t* ws_cmd_send_buf = mem_Malloc(WS_SERVER_CMD_BUF_SIZE);
 		if (ws_cmd_send_buf == NULL) {
@@ -1474,29 +1483,11 @@ int HTTPd_Process_GET_Request(HTTPd_WebSocked_Client_Connection *connData) {
 		}
 		else
 		{
-                        r = HTTPD_CGI_DONE;
-			if (strncmp(connData->url, "/", 1) == 0 && strlen(connData->url) == strlen("/"))
-			{
-                                mem_Free(connData->url);
-                                const char* pUrl = "index.html";
-                                uint8_t url_len = strlen(pUrl);
-                                connData->url = mem_Malloc(url_len+1);
-                                if(connData->url==NULL)
-                                {
-                                        return HTTPD_CGI_DONE; 
-                                }
-                                memcpy(connData->url, pUrl, url_len);
-                                connData->url[url_len] = '\0';
-                                r = HTTPd_SendWebFile(connData);
-			}
-			else
-			{
-				r = HTTPd_SendWebFile(connData);
-                                if(r==HTTPD_CGI_NOTFOUND)
-                                {
-                                      HTTPd_NotFound(connData);
-                                }
-			}
+                        r = HTTPd_SendWebFile(connData);
+                        if(r==HTTPD_CGI_NOTFOUND)
+                        {
+                                HTTPd_NotFound(connData);
+                        }
 		}
 
                 return HTTPD_CGI_DONE;
